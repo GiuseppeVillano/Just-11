@@ -9,6 +9,18 @@ import java.util.Random;
 
 import javax.swing.JPanel;
 
+import it.unical.mat.embasp.base.Handler;
+import it.unical.mat.embasp.base.InputProgram;
+import it.unical.mat.embasp.base.Output;
+import it.unical.mat.embasp.languages.IllegalAnnotationException;
+import it.unical.mat.embasp.languages.ObjectNotValidException;
+import it.unical.mat.embasp.languages.asp.ASPInputProgram;
+import it.unical.mat.embasp.languages.asp.ASPMapper;
+import it.unical.mat.embasp.languages.asp.AnswerSet;
+import it.unical.mat.embasp.languages.asp.AnswerSets;
+import it.unical.mat.embasp.platforms.desktop.DesktopHandler;
+import it.unical.mat.embasp.specializations.dlv2.desktop.DLV2DesktopService;
+
 public class GamePanel extends JPanel implements MouseListener{
 
 	private static final long serialVersionUID = 15527400473185110L;
@@ -18,19 +30,76 @@ public class GamePanel extends JPanel implements MouseListener{
 	private int score;
 	private GUI gui;
 	
+	private static String encodingResource="encodings/just11";
+	
+	private static Handler handler;
+	
 	public GamePanel(GUI gui) {
 		this.gui=gui;
 		size=5;
 		grid=new Cell[size][size];
-		cellSize=115;
+		cellSize=118;
 		maxCur=3;
 		Random r=new Random();
 		for(int i = 0; i < grid.length; i++) {
 			for(int j = 0; j < grid[i].length; j++) {
-				grid[i][j] = new Cell(r.nextInt(maxCur)+1);
+				grid[i][j] = new Cell(i,j,r.nextInt(maxCur)+1);
 			}
 		}
 		addMouseListener(this);
+		
+		//Windows 64bit
+		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));
+
+		//Linux 64bit
+		//handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
+				
+		//MacOS 64bit
+		//handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2-mac"));
+		
+		try {
+			ASPMapper.getInstance().registerClass(Cell.class);
+		} catch (ObjectNotValidException | IllegalAnnotationException e1) {
+			e1.printStackTrace();
+		}
+		InputProgram facts= new ASPInputProgram();
+		for(int i=0;i<size;i++){
+			for(int j=0;j<size;j++){
+				try {
+					facts.addObjectInput(new Cell(i, j, grid[i][j].getType()));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}	
+			}			
+		}
+		
+		//Aggiungiamo all'handler i fatti 
+		handler.addProgram(facts);
+				
+		//Specifichiamo il programma logico tramite file
+		InputProgram encoding= new ASPInputProgram();
+		encoding.addFilesPath(encodingResource);
+				
+		//Aggiungiamo all'handler il programma logico
+		handler.addProgram(encoding);
+				
+		//L'handler invoca DLV2 in modo SINCRONO dando come input il programma logico e i fatti
+		Output o =  handler.startSync();
+		
+		//Analizziamo l'answer set 
+		AnswerSets answersets = (AnswerSets) o;
+		for(AnswerSet a:answersets.getAnswersets()){
+			try {
+				for(Object obj:a.getAtoms()){
+					if(!(obj instanceof Cell)) continue;
+					Cell cell= (Cell) obj;					
+					grid[cell.getX()][cell.getY()].setType(cell.getType()); 
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} 
+					
+		}
 	}
 	
 	@Override
@@ -52,10 +121,8 @@ public class GamePanel extends JPanel implements MouseListener{
 		if(!hasNeighbour(x,y,grid[x][y].getType()))
 			return;
 		grid[x][y].nextType();
-		if(grid[x][y].getType()>maxCur) {
-			System.out.println(maxCur);
+		if(grid[x][y].getType()>maxCur) 
 			maxCur++;
-		}
 		
 		score=1;
 		updateNeighbourhood(grid[x][y].getType()-1,x,y);
@@ -140,7 +207,10 @@ public class GamePanel extends JPanel implements MouseListener{
 		for(int i=0;i<size;i++)
 			for(int j=0;j<size;j++) 
 				if(grid[i][j].getType()==-1) {
-					grid[i][j].setType(r.nextInt(maxCur)+1);
+					if(r.nextInt(100)<=85) 
+						grid[i][j].setType(r.nextInt(3)+1);
+					else 
+						grid[i][j].setType(r.nextInt(maxCur-2)+2);
 				}
 	}
 	

@@ -2,16 +2,51 @@ package application;
 
 import java.awt.Color;
 
+import it.unical.mat.embasp.languages.Id;
+import it.unical.mat.embasp.languages.Param;
+
+@Id("cell")
 public class Cell {
 	
+	@Param(0)
+	private int x;
+	@Param(1)
+	private int y;
+	@Param(2)
 	private int type;
+	
 	private Color color;
 	
-	public Cell(int type) {
+	public Cell(int x, int y,int type) {
+		this.x=x;
+		this.y=y;
 		this.type = type;
 		updateColor();
 	}
 	
+	public Cell(int type) {
+		this.type=type;
+		updateColor();
+	}
+	
+	public Cell() {}
+	
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
 	public void setType(int type) {
 		this.type = type;
 		updateColor();
