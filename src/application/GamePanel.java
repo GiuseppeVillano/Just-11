@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Random;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import it.unical.mat.embasp.base.Handler;
@@ -152,13 +153,16 @@ public class GamePanel extends JPanel implements MouseListener{
 			for(int j=0;j<size;j++)
 				if(hasNeighbour(i,j,grid[i][j].getType()))
 					return false;
+		JOptionPane.showMessageDialog(null, "Hai perso!");
 		return true;
 	}
 	private boolean gameWon() {
 		for(int i=0;i<size;i++)
 			for(int j=0;j<size;j++)
-				if(grid[i][j].getType()==11)
+				if(grid[i][j].getType()==11) {
+					JOptionPane.showMessageDialog(null, "Hai vinto!");
 					return true;
+				}
 		return false;
 	}
 	
