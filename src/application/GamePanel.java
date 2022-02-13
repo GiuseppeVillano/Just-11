@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JOptionPane;
@@ -31,10 +32,6 @@ public class GamePanel extends JPanel implements MouseListener{
 	private int score;
 	private GUI gui;
 	
-	private static String encodingResource="encodings/just11";
-	
-	private static Handler handler;
-	
 	public GamePanel(GUI gui) {
 		this.gui=gui;
 		size=5;
@@ -48,59 +45,6 @@ public class GamePanel extends JPanel implements MouseListener{
 			}
 		}
 		addMouseListener(this);
-		
-		//Windows 64bit
-		handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2.exe"));
-
-		//Linux 64bit
-		//handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2"));
-				
-		//MacOS 64bit
-		//handler = new DesktopHandler(new DLV2DesktopService("lib/dlv2-mac"));
-		
-		try {
-			ASPMapper.getInstance().registerClass(Cell.class);
-		} catch (ObjectNotValidException | IllegalAnnotationException e1) {
-			e1.printStackTrace();
-		}
-		InputProgram facts= new ASPInputProgram();
-		for(int i=0;i<size;i++){
-			for(int j=0;j<size;j++){
-				try {
-					facts.addObjectInput(new Cell(i, j, grid[i][j].getType()));
-				} catch (Exception e) {
-					e.printStackTrace();
-				}	
-			}			
-		}
-		
-		//Aggiungiamo all'handler i fatti 
-		handler.addProgram(facts);
-				
-		//Specifichiamo il programma logico tramite file
-		InputProgram encoding= new ASPInputProgram();
-		encoding.addFilesPath(encodingResource);
-				
-		//Aggiungiamo all'handler il programma logico
-		handler.addProgram(encoding);
-				
-		//L'handler invoca DLV2 in modo SINCRONO dando come input il programma logico e i fatti
-		Output o =  handler.startSync();
-		
-		//Analizziamo l'answer set 
-		AnswerSets answersets = (AnswerSets) o;
-		for(AnswerSet a:answersets.getAnswersets()){
-			try {
-				for(Object obj:a.getAtoms()){
-					if(!(obj instanceof Cell)) continue;
-					Cell cell= (Cell) obj;					
-					grid[cell.getX()][cell.getY()].setType(cell.getType()); 
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} 
-					
-		}
 	}
 	
 	@Override
@@ -113,12 +57,9 @@ public class GamePanel extends JPanel implements MouseListener{
 				g.setFont(new Font(Font.SERIF,Font.BOLD,cellSize));
 				g.drawString(String.valueOf(grid[i][j].getType()), i*cellSize, j*cellSize+cellSize);
 			}
-
-					
-					
 	}
 
-	private void updateGame(int x,int y) {
+	public void updateGame(int x,int y) {
 		if(!hasNeighbour(x,y,grid[x][y].getType()))
 			return;
 		grid[x][y].nextType();
@@ -184,22 +125,22 @@ public class GamePanel extends JPanel implements MouseListener{
 			return;
 		}
 		if(x!=0&&grid[x-1][y].getType()==type) {
-			grid[x-1][y].setType(-1);
+			grid[x-1][y].changeType(-1);
 			score+=1;
 			updateNeighbourhood(type,x-1,y);
 		}
 		if(x!=4&&grid[x+1][y].getType()==type) {
-			grid[x+1][y].setType(-1);
+			grid[x+1][y].changeType(-1);
 			score+=1;
 			updateNeighbourhood(type,x+1,y);
 		}
 		if(y!=0&&grid[x][y-1].getType()==type) {
-			grid[x][y-1].setType(-1);
+			grid[x][y-1].changeType(-1);
 			score+=1;
 			updateNeighbourhood(type,x,y-1);
 		}
 		if(y!=4&&grid[x][y+1].getType()==type) {
-			grid[x][y+1].setType(-1);
+			grid[x][y+1].changeType(-1);
 			score+=1;
 			updateNeighbourhood(type,x,y+1);
 		}
@@ -212,9 +153,9 @@ public class GamePanel extends JPanel implements MouseListener{
 			for(int j=0;j<size;j++) 
 				if(grid[i][j].getType()==-1) {
 					if(r.nextInt(100)<=85) 
-						grid[i][j].setType(r.nextInt(3)+1);
+						grid[i][j].changeType(r.nextInt(3)+1);
 					else 
-						grid[i][j].setType(r.nextInt(maxCur-2)+2);
+						grid[i][j].changeType(r.nextInt(maxCur-2)+2);
 				}
 	}
 	
@@ -230,9 +171,9 @@ public class GamePanel extends JPanel implements MouseListener{
 		int k=0;
 		while(k!=5) {
 			for(int i=y;i>=1;i--) {
-				grid[x][i].setType(grid[x][i-1].getType());
+				grid[x][i].changeType(grid[x][i-1].getType());
 			}
-			grid[x][0].setType(-1);
+			grid[x][0].changeType(-1);
 			if(grid[x][y].getType()!=-1)
 				return;
 			k++;
@@ -258,6 +199,14 @@ public class GamePanel extends JPanel implements MouseListener{
 
 	@Override
 	public void mouseExited(MouseEvent e) {}
+	
+	public int getGridSize() {
+		return size;
+	}
+	public Cell[][] getGrid() {
+		return grid;
+	}
+	
 		
 
 }

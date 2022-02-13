@@ -13,7 +13,8 @@ public class Main {
 		f.setSize(600,650);
 		GUI gui=new GUI();
 		GamePanel p=new GamePanel(gui);
-		
+		Loop loop=new Loop(p);
+		loop.start();
 		f.add(gui,BorderLayout.NORTH);
 		f.add(p,BorderLayout.CENTER);
 		p.setFocusable(true);

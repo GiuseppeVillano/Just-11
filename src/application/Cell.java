@@ -5,7 +5,7 @@ import java.awt.Color;
 import it.unical.mat.embasp.languages.Id;
 import it.unical.mat.embasp.languages.Param;
 
-@Id("cell")
+@Id("fatto")
 public class Cell {
 	
 	@Param(0)
@@ -46,8 +46,12 @@ public class Cell {
 	public void setY(int y) {
 		this.y = y;
 	}
-
+	
 	public void setType(int type) {
+		this.type = type;
+	}
+
+	public void changeType(int type) {
 		this.type = type;
 		updateColor();
 	}
@@ -112,5 +116,12 @@ public class Cell {
 		type++;
 		updateColor();
 	}
+
+	@Override
+	public String toString() {
+		return "Cell [x=" + x + ", y=" + y + ", type=" + type + ", color=" + color + "]";
+	}
+	
+	
 	
 }

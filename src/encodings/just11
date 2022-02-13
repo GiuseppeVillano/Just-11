@@ -1,0 +1,30 @@
+%Guess (seleziona una casella in base i fatti ricevuti dal programma)
+seleziona(X,Y,Type)|nonSeleziona(X,Y,Type):- fatto(X,Y,Type).
+
+%Sezione Strong Constraint
+
+%Scarta le caselle selezionate che non hanno vicini oriz/vert.
+vicini(X,Y1,X,Y2):-fatto(X,Y1,Type),fatto(X,Y2,Type),1=Y1-Y2.
+vicini(X1,Y,X2,Y):-fatto(X1,Y,Type),fatto(X2,Y,Type),1=X1-X2.
+
+:-seleziona(X1,Y1,Type),Z=#count{X1,Y1:vicini(X1,Y1,_,_)},Z<=0.
+
+vicini(X2,Y2,X1,Y1):-vicini(X1,Y1,X2,Y2).
+
+%Solo una  casella deve essere selezionata
+:-Z=#count{X,Y,T:seleziona(X,Y,T)}, Z!=1.
+
+
+%Sezione Weak Constraint
+
+%(Priorità 3-Alta)è preferibile selezionare la casella sopra ad un numero successivo 
+%(esempio un 4 con dei vicini e sotto ha un 5).
+:~seleziona(X,Y,T),not fatto(X+1,Y,T+1). [1@3]
+
+%(Priorità 2) è preferibile selezionare le caselle con Type (numero) minore 
+%(permettono di generare vicini più facilmente per tutti i numeri gradualmente.)
+:~seleziona(X,Y,T). [T@2]
+
+
+%(Priorità 1 ultima-Bassa) è preferibile selezionare la casella con più vicini, per avere più punteggio.
+:~seleziona(X,Y,T),#count{X,Y:vicini(X,Y,_,_)}=Z,W=25-Z. [W@1]
