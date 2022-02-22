@@ -17,14 +17,16 @@ vicini(X2,Y2,X1,Y1):-vicini(X1,Y1,X2,Y2).
 
 %Sezione Weak Constraint
 
-%(Priorità 3-Alta)è preferibile selezionare la casella sopra ad un numero successivo 
+%(Priorità 4-Alta)è preferibile selezionare la casella sopra ad un numero successivo 
 %(esempio un 4 con dei vicini e sotto ha un 5).
-:~seleziona(X,Y,T),not fatto(X+1,Y,T+1). [1@3]
+:~seleziona(X,Y,T),not fatto(X+1,Y,T+1). [1@4]
 
-%(Priorità 2) è preferibile selezionare le caselle con Type (numero) minore 
+%(Priorità 3) è preferibile selezionare le caselle con Type (numero) minore 
 %(permettono di generare vicini più facilmente per tutti i numeri gradualmente.)
-:~seleziona(X,Y,T). [T@2]
+:~seleziona(X,Y,T). [T@3]
 
+%(Priorità 2) è preferibile selezionare le caselle più a sinistra, per concentrare i numeri più grandi in un solo lato della matrice
+:~seleziona(X,Y,T). [Y@2]
 
 %(Priorità 1 ultima-Bassa) è preferibile selezionare la casella con più vicini, per avere più punteggio.
-:~seleziona(X,Y,T),#count{X,Y:vicini(X,Y,_,_)}=Z,W=25-Z. [W@1]
+:~seleziona(X,Y,T),#count{X,Y,X1,Y1:vicini(X,Y,X1,Y1)}=Z,W=25-Z. [W@1]
